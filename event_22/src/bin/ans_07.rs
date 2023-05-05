@@ -1,6 +1,8 @@
+use std::collections::HashMap;
+
 #[derive(Debug)]
 enum FileType {
-    Dir(Vec<Node>),
+    Dir,
     File,
 }
 
@@ -9,49 +11,50 @@ struct Node {
     size: usize,
     file_type: FileType,
     name: String,
+    items: Vec<Node>,
 }
 
-struct Tree<'a> {
-    stack: Vec<&'a mut Node>,
-}
-
-impl<'a> Node<'a> {
+impl Node {
     fn new() -> Self {
         Node {
             size: 0,
             file_type: FileType::Dir,
             name: "/".into(),
-            child: Vec::new(),
-            parent: None,
+            items: Vec::new(),
         }
     }
 
-    fn add_dir(&mut self, name: &str) -> &Node {
-        let cur = self.clone();
-        let node = Node {
+    fn add_dir(&mut self, name: &str) {
+        self.items.push(Node {
             size: 0,
             file_type: FileType::Dir,
             name: name.into(),
-            child: Vec::new(),
-            parent: Some(self),
-        };
-        self.child.push(Box::new(node));
-        self.child.last().unwrap()
+            items: Vec::new(),
+        });
     }
 
     fn add_file(&mut self, name: &str, size: usize) {
-        let node = Node {
+        self.items.push(Node {
             size,
             file_type: FileType::File,
             name: name.into(),
-            child: Vec::new(),
-            parent: None,
-        };
-        self.child.push(Box::new(node));
+            items: Vec::new(),
+        });
     }
+}
 
-    fn dir_size(&self) -> usize {
-        0
+struct Tree {
+    stack: Vec<Box<Node>>,
+    node: Node,
+    dirs: HashMap<String, usize>,
+}
+
+impl Tree {
+    fn new() -> Self {
+        Tree {
+            stack: vec![],
+            node: Node::new(),
+        }
     }
 }
 
