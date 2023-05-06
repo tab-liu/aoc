@@ -58,7 +58,39 @@ fn part_one(group: &Vec<Vec<u8>>) -> usize {
 }
 
 fn score(group: &Vec<Vec<u8>>, i: usize, j: usize) -> usize {
-    0
+    let cur = group[i][j];
+    #[allow(unused_assignments)]
+    let (mut left, mut right, mut top, mut bottom) = (0, 0, 0, 0);
+
+    // left
+    let (mut x, mut y) = (i - 1, j);
+    while x > 0 && group[x][y] < cur {
+        x -= 1;
+    }
+    left = i - x;
+
+    // right
+    (x, y) = (i + 1, j);
+    while x < group[0].len() - 1 && group[x][y] < cur {
+        x += 1;
+    }
+    right = x - i;
+
+    // top
+    (x, y) = (i, j - 1);
+    while y > 0 && group[x][y] < cur {
+        y -= 1;
+    }
+    top = j - y;
+
+    // bottom
+    (x, y) = (i, j + 1);
+    while y < group.len() - 1 && group[x][y] < cur {
+        y += 1;
+    }
+    bottom = y - j;
+
+    left * right * top * bottom
 }
 
 fn part_two(group: &Vec<Vec<u8>>) -> usize {
