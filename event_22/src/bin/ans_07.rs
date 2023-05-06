@@ -136,8 +136,13 @@ fn walk_a(arena: &Arena) -> usize {
     arena
         .map
         .iter()
-        .filter(|&(_, item)| item.is_dir && item.size <= 100_000)
-        .map(|(_, item)| item.size)
+        .filter_map(|(_, item)| {
+            if item.is_dir && item.size <= 100_000 {
+                Some(item.size)
+            } else {
+                None
+            }
+        })
         .sum()
 }
 
@@ -148,8 +153,13 @@ fn walk_b(arena: &Arena) -> usize {
     arena
         .map
         .iter()
-        .filter(|&(_, item)| item.is_dir && item.size >= need_free)
-        .map(|(_, item)| item.size)
+        .filter_map(|(_, item)| {
+            if item.is_dir && item.size >= need_free {
+                Some(item.size)
+            } else {
+                None
+            }
+        })
         .min()
         .unwrap()
 }
