@@ -1,5 +1,5 @@
-use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::{fs::File, path::PathBuf};
 
 fn score_a(a: &str, b: &str) -> i32 {
     let win = [3, 0, 6, 3, 0, 6];
@@ -45,7 +45,10 @@ fn score_b(a: &str, b: &str) -> i32 {
 }
 
 fn main() {
-    let file = File::open("input_02.txt").unwrap();
+    let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path.push("src/bin/input_02.txt");
+
+    let file = File::open(path).unwrap();
     let buf = BufReader::new(file);
 
     let mut ans_a = 0;

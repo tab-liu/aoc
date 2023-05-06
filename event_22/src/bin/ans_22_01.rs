@@ -1,8 +1,12 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::path::PathBuf;
 
 fn main() {
-    let file = File::open("input_01.txt").unwrap();
+    let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path.push("src/bin/input_01.txt");
+
+    let file = File::open(path).unwrap();
     let buf = BufReader::new(file);
 
     let mut max = (0, 0, 0);

@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::{collections::HashMap, path::PathBuf};
 
 fn num(c: char) -> i32 {
     match c {
@@ -48,7 +48,10 @@ fn get_b(v: &Vec<String>) -> i32 {
 }
 
 fn main() {
-    let file = File::open("input_03.txt").unwrap();
+    let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path.push("src/bin/input_03.txt");
+
+    let file = File::open(path).unwrap();
     let buf = BufReader::new(file);
 
     let mut ans_a = 0;

@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-
+use std::path::PathBuf;
 #[derive(Debug)]
 struct Arena {
     map: HashMap<usize, Item>,
@@ -167,8 +167,11 @@ fn walk_b(arena: &Arena) -> usize {
 fn main() {
     let mut arena = Arena::new();
 
-    let lines = include_str!("input_07.txt").lines();
-    for line in lines.skip(1) {
+    let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path.push("src/bin/input_07.txt");
+
+    let contents = std::fs::read_to_string(path).unwrap();
+    for line in contents.lines().skip(1) {
         // println!("{line}");
         if line.starts_with("$") {
             cmd_parser(&mut arena, line);

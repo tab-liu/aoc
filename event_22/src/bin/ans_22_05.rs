@@ -1,5 +1,5 @@
-use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::{fs::File, path::PathBuf};
 
 #[allow(dead_code)]
 fn crate_mover_9000(stacks: &mut Vec<Vec<char>>, num: i32, from: usize, to: usize) {
@@ -29,7 +29,10 @@ fn show(stacks: &Vec<Vec<char>>) {
 }
 
 fn main() {
-    let file = File::open("input_05.txt").unwrap();
+    let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path.push("src/bin/input_05.txt");
+
+    let file = File::open(path).unwrap();
     let buf = BufReader::new(file);
 
     // let mut stacks = vec![vec!['Z', 'N'], vec!['M', 'C', 'D'], vec!['P']];
