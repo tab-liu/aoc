@@ -35,7 +35,7 @@ impl Position {
             return;
         }
         let mut dx = self.nodes[head].0 - self.nodes[tail].0;
-        let mut dy = self.nodes[head].1 - self.nodes[tail].1;
+        let mut dy: i32 = self.nodes[head].1 - self.nodes[tail].1;
 
         if dx.abs() == 2 {
             dx /= 2;
