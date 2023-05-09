@@ -4,23 +4,23 @@ use std::fs;
 use std::path::PathBuf;
 #[derive(Debug, Default)]
 struct Monkey {
-    id: i32,
-    items: VecDeque<i32>,
+    id: i64,
+    items: VecDeque<i64>,
     op: String,
-    div: i32,
-    if_true: i32,
-    if_false: i32,
-    inspect: i32,
+    div: i64,
+    if_true: i64,
+    if_false: i64,
+    inspect: i64,
 }
 
 impl Monkey {
     fn new(
-        id: i32,
-        items: VecDeque<i32>,
+        id: i64,
+        items: VecDeque<i64>,
         op: String,
-        div: i32,
-        if_true: i32,
-        if_false: i32,
+        div: i64,
+        if_true: i64,
+        if_false: i64,
     ) -> Self {
         Monkey {
             id,
@@ -33,10 +33,15 @@ impl Monkey {
         }
     }
 
-    fn operation(&mut self) -> (i32, i32) {
+    fn operation(&mut self, worry_div: i64, mod_group: i64) -> (i64, i64) {
         let item = self.items.pop_front().unwrap();
         let code = self.op.replace("old", &item.to_string());
-        let new_item = eval(&code).unwrap().as_int().unwrap() as i32 / 3;
+        let new_item = eval(&code).unwrap().as_int().unwrap() as i64 / worry_div;
+        let new_item = if worry_div == 1 {
+            new_item % mod_group
+        } else {
+            new_item
+        };
         self.inspect += 1;
         if new_item % self.div == 0 {
             (self.if_true, new_item)
@@ -45,13 +50,14 @@ impl Monkey {
         }
     }
 
-    fn add_item(&mut self, item: i32) {
+    fn add_item(&mut self, item: i64) {
         self.items.push_back(item);
     }
 }
 
 #[derive(Debug, Default)]
 struct MonkeyGroup {
+    mod_group: i64,
     group: Vec<Monkey>,
 }
 
@@ -60,11 +66,21 @@ impl MonkeyGroup {
         Default::default()
     }
 
-    fn round(&mut self) {
+    fn update_mode(&mut self) {
+        self.mod_group = self
+            .group
+            .iter()
+            .map(|x| x.div)
+            .collect::<Vec<_>>()
+            .iter()
+            .product::<i64>();
+    }
+
+    fn round(&mut self, worry_div: i64) {
         for monkey_id in 0..self.group.len() {
             let times = self.group[monkey_id].items.len();
             for _ in 0..times {
-                let (id, item) = self.group[monkey_id].operation();
+                let (id, item) = self.group[monkey_id].operation(worry_div, self.mod_group);
                 self.group[id as usize].add_item(item);
             }
         }
@@ -78,11 +94,12 @@ impl MonkeyGroup {
         println!();
     }
 
-    fn inspects(&self) -> Vec<i32> {
+    #[allow(dead_code)]
+    fn inspects(&self) -> Vec<i64> {
         self.group.iter().map(|m| m.inspect).collect()
     }
 
-    fn level(&self) -> i32 {
+    fn level(&self) -> i64 {
         let mut ins = self.inspects();
         ins.sort_unstable_by(|a, b| b.cmp(a));
         ins[0] * ins[1]
@@ -96,7 +113,7 @@ fn parse_monkey(s: &str) -> Monkey {
         .unwrap()
         .split(&[' ', ':'][..])
         .collect::<Vec<_>>()[1]
-        .parse::<i32>()
+        .parse::<i64>()
         .unwrap();
     let items = lines
         .next()
@@ -105,7 +122,7 @@ fn parse_monkey(s: &str) -> Monkey {
         .last()
         .unwrap()
         .split(',')
-        .map(|x| x.trim().parse::<i32>().unwrap())
+        .map(|x| x.trim().parse::<i64>().unwrap())
         .collect::<VecDeque<_>>();
     let op = lines
         .next()
@@ -120,7 +137,7 @@ fn parse_monkey(s: &str) -> Monkey {
         .split_whitespace()
         .last()
         .unwrap()
-        .parse::<i32>()
+        .parse::<i64>()
         .unwrap();
     let if_true = lines
         .next()
@@ -128,7 +145,7 @@ fn parse_monkey(s: &str) -> Monkey {
         .split(' ')
         .last()
         .unwrap()
-        .parse::<i32>()
+        .parse::<i64>()
         .unwrap();
     let if_false = lines
         .next()
@@ -136,7 +153,7 @@ fn parse_monkey(s: &str) -> Monkey {
         .split(' ')
         .last()
         .unwrap()
-        .parse::<i32>()
+        .parse::<i64>()
         .unwrap();
 
     let monkey = Monkey::new(id, items, op, div, if_true, if_false);
@@ -156,16 +173,21 @@ fn main() {
 
     let content = fs::read_to_string(path).unwrap();
 
-    let mut monkeys = parse(content);
-
-    // monkeys.show_items();
-    // monkeys.round();
-    // monkeys.show_items();
-
+    let mut monkeys = parse(content.clone());
+    monkeys.update_mode();
     for _ in 0..20 {
-        monkeys.round();
+        monkeys.round(3);
     }
-    monkeys.show_items();
-    println!("{:?}", monkeys.inspects());
+    // monkeys.show_items();
+    // println!("{:?}", monkeys.inspects());
+    println!("{:?}", monkeys.level());
+
+    // ------ part 2 --------
+    let mut monkeys = parse(content);
+    monkeys.update_mode();
+    for _ in 0..10000 {
+        monkeys.round(1);
+    }
+    // println!("{:?}", monkeys.inspects());
     println!("{:?}", monkeys.level());
 }
