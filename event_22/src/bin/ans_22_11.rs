@@ -33,10 +33,20 @@ impl Monkey {
         }
     }
 
-    fn operation(&mut self) -> i32 {
+    fn operation(&mut self) -> (i32, i32) {
         let item = self.items.pop_front().unwrap();
         let code = self.op.replace("old", &item.to_string());
-        eval(&code).unwrap().as_int().unwrap() as i32
+        let new_item = eval(&code).unwrap().as_int().unwrap() as i32 / 3;
+        self.inspect += 1;
+        if new_item % self.div == 0 {
+            (self.if_true, new_item)
+        } else {
+            (self.if_false, new_item)
+        }
+    }
+
+    fn add_item(&mut self, item: i32) {
+        self.items.push_back(item);
     }
 }
 
@@ -50,7 +60,33 @@ impl MonkeyGroup {
         Default::default()
     }
 
-    fn round() {}
+    fn round(&mut self) {
+        for monkey_id in 0..self.group.len() {
+            let times = self.group[monkey_id].items.len();
+            for _ in 0..times {
+                let (id, item) = self.group[monkey_id].operation();
+                self.group[id as usize].add_item(item);
+            }
+        }
+    }
+
+    #[allow(dead_code)]
+    fn show_items(&self) {
+        for monkey in self.group.iter() {
+            println!("id: {}, items: {:?}", monkey.id, monkey.items);
+        }
+        println!();
+    }
+
+    fn inspects(&self) -> Vec<i32> {
+        self.group.iter().map(|m| m.inspect).collect()
+    }
+
+    fn level(&self) -> i32 {
+        let mut ins = self.inspects();
+        ins.sort_unstable_by(|a, b| b.cmp(a));
+        ins[0] * ins[1]
+    }
 }
 
 fn parse_monkey(s: &str) -> Monkey {
@@ -116,11 +152,20 @@ fn parse(s: String) -> MonkeyGroup {
 }
 fn main() {
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    path.push("src/bin/test.txt");
+    path.push("src/bin/input_11.txt");
 
     let content = fs::read_to_string(path).unwrap();
 
-    let monkeys = parse(content);
+    let mut monkeys = parse(content);
 
-    println!("{:#?}", monkeys);
+    // monkeys.show_items();
+    // monkeys.round();
+    // monkeys.show_items();
+
+    for _ in 0..20 {
+        monkeys.round();
+    }
+    monkeys.show_items();
+    println!("{:?}", monkeys.inspects());
+    println!("{:?}", monkeys.level());
 }
